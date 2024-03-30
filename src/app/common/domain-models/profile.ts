@@ -6,5 +6,5 @@ export interface Profile {
   gender: string;
   email: string;
   birthDate:string;
-  profilePictureURL: string;
+  image: string;
 }

@@ -43,7 +43,8 @@
             <tbody>
               @for (currentProfile of this.userProfileListService.allProfiles | async; track currentProfile.id) {
                 <tr class="border-b dark:border-gray-700">
-                  <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                  <th scope="row" class="flex gap-2 items-center px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                    <img loading="lazy" class="w-6 h-6 rounded-full" [src]="currentProfile.image" alt="user profile picture">
                     {{currentProfile.firstName}} {{' '}} {{ currentProfile.lastName }}
                   </th>
                   <td class="px-4 py-3">{{ currentProfile.email }}</td>
