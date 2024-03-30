@@ -21,4 +21,7 @@ export class ApiService {
     return this.http.post<T>(`${this.baseUrl}/${url}`, body, { headers });
   }
 
+  delete<T>(url: string, headers?: HttpHeaders): Observable<T> {
+    return this.http.delete<T>(`${this.baseUrl}/${url}`, { headers });
+  }
 }

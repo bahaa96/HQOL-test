@@ -1,16 +1,13 @@
 import {Injectable} from '@angular/core';
 import {ApiService} from "../common/services/api.service";
 import {Profile} from "../common/domain-models/profile";
-import {BehaviorSubject, distinctUntilChanged, Observable, Subscription, switchMap} from "rxjs";
+import {BehaviorSubject, distinctUntilChanged, Observable, switchMap} from "rxjs";
 import { HttpParams } from '@angular/common/http';
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 
 interface RequestFetchAllProfilesArgs {
   limit: number;
   skip: number;
-  options?: {
-    signal: AbortSignal;
-  }
 }
 
 interface RequestFetchAllProfilesResult {
@@ -30,7 +27,8 @@ export class UserProfileListService {
   error = new BehaviorSubject<unknown>(null);
   totalCount = new BehaviorSubject(0);
   currentPage = new BehaviorSubject(1);
-
+  isDeletingSingleProfile = new BehaviorSubject(false)
+  isLoadingTail = new BehaviorSubject(false);
 
   constructor(private apiService: ApiService) {
     this.currentPage.pipe(
@@ -65,5 +63,48 @@ export class UserProfileListService {
 
   changePage(page: number): void {
     this.currentPage.next(page)
+  }
+
+  fetchPageTail() {
+    this.isLoadingTail.next(true)
+    this.loadAllProfiles({
+      skip: this.pageSize - 1,
+      limit: 1,
+    })
+      .subscribe({
+        next: result => {
+          this.allProfiles.next([
+              ...this.allProfiles.value,
+            ...result.users,
+          ])
+          this.totalCount.next(result.total)
+          this.isLoadingTail.next(false)
+        },
+        error: error => {
+          this.error.next(error)
+        },
+      })
+  }
+
+  deleteSingleProfile(targetProfileId: number) {
+    if (this.isDeletingSingleProfile.value) {
+      return
+    }
+    this.isDeletingSingleProfile.next(true)
+    this.apiService.delete<Profile>(`users/${targetProfileId}`)
+      .subscribe({
+        next: result => {
+          if (!result.id) {
+            return;
+          }
+          const newProfiles = [...this.allProfiles.value].filter(profile => profile.id !== targetProfileId)
+          this.allProfiles.next(newProfiles)
+          this.isDeletingSingleProfile.next(false)
+          this.fetchPageTail()
+        },
+        error: error => {
+          this.error.next(error)
+        },
+      })
   }
 }

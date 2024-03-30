@@ -22,4 +22,5 @@ export class UserProfileListComponent {
 
   protected readonly Array = Array;
   protected readonly Math = Math;
+  protected readonly Number = Number;
 }
